@@ -32,6 +32,17 @@ jobs:
         echo "Disk usage:"
         df -h
 
+    - name: Retry flaky tests
+      uses: nick-fields/retry@v2
+      with:
+        max_attempts: 3          # retry up to 3 times
+        timeout_minutes: 5       # each attempt can run for 5 minutes
+        retry_wait_seconds: 20   # wait 20s between retries
+        command: |
+          cd src
+          python -m pytest addition.py
+
+
     - name: Run tests
       run: |
         cd src
