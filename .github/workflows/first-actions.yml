@@ -32,6 +32,11 @@ jobs:
         echo "Disk usage:"
         df -h
 
+    - name: Run tests
+      run: |
+        cd src
+        python -m pytest addition.py
+
     - name: Retry flaky tests
       uses: nick-fields/retry@v2
       with:
@@ -41,9 +46,3 @@ jobs:
         command: |
           cd src
           python -m pytest addition.py
-
-
-    - name: Run tests
-      run: |
-        cd src
-        python -m pytest addition.py
