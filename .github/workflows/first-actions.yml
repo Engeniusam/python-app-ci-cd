@@ -67,3 +67,9 @@ jobs:
           python -m pytest addition.py
       # Step 7: Run the same test command wrapped in retry logic
       # - Provides resilience against flaky tests, race conditions, or transient API/network issues
+
+    - name: Debug with SSH (tmate)   # Step label shown in GitHub Actions logs
+      uses: mxschmitt/action-tmate@v3   # Run the tmate action (v3) to open a live SSH session on the runner
+      with:
+        limit-access-to-actor: true     # Restrict access so only the workflow triggerer (you) can connect
+
