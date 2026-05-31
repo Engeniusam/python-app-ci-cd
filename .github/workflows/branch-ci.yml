@@ -1,0 +1,50 @@
+name: Multi-Branch CI/CD
+
+on:
+  push:
+    branches:
+      - 'feature/*'   # any feature branch
+      - 'develop'     # integration branch
+      - 'staging'     # pre-production branch
+      - 'main'        # production branch
+
+jobs:
+  # Fast feedback for feature branches
+  feature-checks:
+    if: startsWith(github.ref, 'refs/heads/feature/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint code
+        run: flake8 src/
+      - name: Security scan
+        run: bandit -r src/
+      - name: Run unit tests
+        run: pytest tests/
+
+  # Build artifacts for develop/staging
+  build-artifacts:
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build wheel
+        run: python setup.py sdist bdist_wheel
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-app-package
+          path: dist/*
+
+  # Production deployment for main
+  deploy-production:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run migrations
+        run: python manage.py migrate
+      - name: Deploy to production
+        run: echo "🚀 Deploying to production environment..."
