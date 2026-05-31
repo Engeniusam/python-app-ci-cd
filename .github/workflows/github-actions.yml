@@ -15,11 +15,11 @@ on:
     - cron: '0 2 * * *' # Run every day at 02:00 UTC
 
 jobs:
-  build:                # Define a job named "build"
+  build:                # Job 1: Build and test the application
     runs-on: ubuntu-latest   # Use GitHub's hosted Ubuntu runner
 
     strategy:
-      max-parallel: 2              # Limit to 2 jobs running at once
+      max-parallel: 2              # Limit to 2 jobs running at once (avoid rate limits)
       matrix:
         python-version: [3.8, 3.9]   # Run the job against both Python 3.8 and 3.9
 
@@ -75,14 +75,44 @@ jobs:
           python -m pytest addition.py
       # Step 7: Run the same test command wrapped in retry logic for resilience
 
+    - name: Build wheel
+      run: python setup.py sdist bdist_wheel
+      # Step 8: Build distributable Python package (wheel + source distribution)
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-app-package
+        path: dist/*
+      # Step 9: Save build outputs (wheel, sdist) into GitHub’s workflow storage
+
     - name: Debug with SSH (tmate)
       if: failure()
       uses: mxschmitt/action-tmate@v3
       with:
         limit-access-to-actor: true
-      # Step 8: If the job fails, open a live SSH session (tmate) for debugging
+      # Step 10: If the job fails, open a live SSH session (tmate) for debugging
 
-  nightly-security-scan:   # New job for nightly scans
+  package:              # Job 2: Consume artifacts from build job
+    needs: build        # Run only after build job finishes
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: python-app-package
+        path: ./dist
+      # Step 1: Retrieve build outputs from workflow storage
+
+    - name: Verify artifact contents
+      run: ls -lh ./dist
+      # Step 2: Confirm files are present
+
+    - name: Deploy package
+      run: echo "🚀 Deploying package from ./dist"
+      # Step 3: Use the artifact for deployment or further packaging
+
+  nightly-security-scan:   # Job 3: Nightly security scans
     if: github.event_name == 'schedule'   # Only run when triggered by cron
     runs-on: ubuntu-latest
     steps:
