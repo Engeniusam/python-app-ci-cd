@@ -75,15 +75,15 @@ jobs:
           python -m pytest addition.py
       # Step 7: Run the same test command wrapped in retry logic for resilience
 
-    - name: Build wheel
-      run: python setup.py sdist bdist_wheel
+  #  - name: Build wheel
+  #    run: python setup.py sdist bdist_wheel
       # Step 8: Build distributable Python package (wheel + source distribution)
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: python-app-package
-        path: dist/*
+   # - name: Upload artifact
+    #  uses: actions/upload-artifact@v4
+  #    with:
+    #    name: python-app-package
+    #    path: dist/*
       # Step 9: Save build outputs (wheel, sdist) into GitHub’s workflow storage
 
     - name: Debug with SSH (tmate)
@@ -93,23 +93,23 @@ jobs:
         limit-access-to-actor: true
       # Step 10: If the job fails, open a live SSH session (tmate) for debugging
 
-  package:              # Job 2: Consume artifacts from build job
-    needs: build        # Run only after build job finishes
-    runs-on: ubuntu-latest
-    steps:
-    - name: Download artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: python-app-package
-        path: ./dist
+ # package:              # Job 2: Consume artifacts from build job
+ #   needs: build        # Run only after build job finishes
+ #   runs-on: ubuntu-latest
+  #  steps:
+  #  - name: Download artifact
+  #    uses: actions/download-artifact@v4
+  #    with:
+  #      name: python-app-package
+   #     path: ./dist
       # Step 1: Retrieve build outputs from workflow storage
 
-    - name: Verify artifact contents
-      run: ls -lh ./dist
+  #  - name: Verify artifact contents
+  #    run: ls -lh ./dist
       # Step 2: Confirm files are present
 
-    - name: Deploy package
-      run: echo "🚀 Deploying package from ./dist"
+  #  - name: Deploy package
+  #    run: echo "🚀 Deploying package from ./dist"
       # Step 3: Use the artifact for deployment or further packaging
 
   nightly-security-scan:   # Job 3: Nightly security scans
