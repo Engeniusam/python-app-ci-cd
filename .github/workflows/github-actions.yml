@@ -1,34 +1,36 @@
-name: python app cicd
+name: python app cicd   # Workflow name shown in GitHub Actions UI
 
 on:
-  push:
+  push:                 # Trigger workflow when code is pushed
     branches:
-      - main
-      - develop
-      - 'feature/*'
-  pull_request:
+      - main            # Run on pushes to the main branch
+      - develop         # Run on pushes to the develop branch
+      - 'feature/*'     # Run on pushes to any feature branch
+  pull_request:         # Trigger workflow when a pull request is opened/updated
     branches:
-      - main
-      - develop
-  schedule:
+      - main            # Run PR checks targeting main
+      - develop         # Run PR checks targeting develop
+  schedule:             # Trigger workflow on a schedule (cron syntax)
     # Nightly run at 2 AM UTC
-    - cron: '0 2 * * *'
+    - cron: '0 2 * * *' # Run every day at 02:00 UTC
 
 jobs:
-  build:
+  build:                # Define a job named "build"
     runs-on: ubuntu-latest   # Use GitHub's hosted Ubuntu runner
 
     strategy:
       matrix:
         python-version: [3.8, 3.9]   # Run the job against both Python 3.8 and 3.9
 
-    steps:
+    steps:              # Steps executed sequentially in the job
     - uses: actions/checkout@v3
+      # Step 1: Check out the repository code so the workflow has access to it
 
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+      # Step 2: Install the specified Python version (from the matrix)
 
     - name: Cache pip dependencies
       uses: actions/cache@v3
@@ -37,11 +39,13 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
+      # Step 3: Cache pip packages to speed up installs between runs
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+      # Step 4: Upgrade pip and install dependencies from requirements.txt
 
     - name: Check system resources
       run: |
@@ -51,24 +55,28 @@ jobs:
         free -h
         echo "Disk usage:"
         df -h
+      # Step 5: Print CPU, memory, and disk usage for debugging resource exhaustion
 
     - name: Run tests
       run: |
         cd src
         python -m pytest addition.py
+      # Step 6: Run the test suite once (plain run) to see immediate results
 
     - name: Retry flaky tests
       uses: nick-fields/retry@v2
       with:
-        max_attempts: 3
-        timeout_minutes: 5
-        retry_wait_seconds: 20
+        max_attempts: 3          # Retry up to 3 times if tests fail
+        timeout_minutes: 5       # Each attempt can run for 5 minutes
+        retry_wait_seconds: 20   # Wait 20 seconds between retries
         command: |
           cd src
           python -m pytest addition.py
+      # Step 7: Run the same test command wrapped in retry logic for resilience
 
     - name: Debug with SSH (tmate)
       if: failure()
       uses: mxschmitt/action-tmate@v3
       with:
         limit-access-to-actor: true
+      # Step 8: If the job fails, open a live SSH session (tmate) for debugging
