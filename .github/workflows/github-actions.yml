@@ -22,7 +22,7 @@ jobs:
       matrix:
         python-version: [3.8, 3.9]   # Run the job against both Python 3.8 and 3.9
 
-    steps:              # Steps executed sequentially in the job
+    steps:
     - uses: actions/checkout@v3
       # Step 1: Check out the repository code so the workflow has access to it
 
@@ -80,3 +80,28 @@ jobs:
       with:
         limit-access-to-actor: true
       # Step 8: If the job fails, open a live SSH session (tmate) for debugging
+
+  nightly-security-scan:   # New job for nightly scans
+    if: github.event_name == 'schedule'   # Only run when triggered by cron
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      # Step 1: Check out the repository code
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.11"
+      # Step 2: Use a stable Python version for scanning
+
+    - name: Install security tools
+      run: pip install bandit snyk
+      # Step 3: Install Bandit and Snyk for security analysis
+
+    - name: Run Bandit scan
+      run: bandit -r src/
+      # Step 4: Static analysis for Python security issues
+
+    - name: Run Snyk scan
+      run: snyk test --file=requirements.txt
+      # Step 5: Dependency vulnerability check against requirements.txt
