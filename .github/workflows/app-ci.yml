@@ -1,0 +1,14 @@
+name: App CI Workflow
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  use-reusable:
+    uses: Engeniusam/org-ci-workflows/.github/workflows/ci.yml@v1.0.0
+    with:
+      python-version: "3.11"
+      run-tests: true
+    secrets:
+      repo-token: ${{ secrets.GITHUB_TOKEN }}
