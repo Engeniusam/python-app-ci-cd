@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest   # Use GitHub's hosted Ubuntu runner
 
     strategy:
+      max-parallel: 2              # Limit to 2 jobs running at once
       matrix:
         python-version: [3.8, 3.9]   # Run the job against both Python 3.8 and 3.9
 
